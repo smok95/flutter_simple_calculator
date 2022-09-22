@@ -8,8 +8,8 @@ class CalcController extends ChangeNotifier {
   final Calculator _calc;
   String _acLabel = 'AC';
 
-  /// Create a [CalcController] with [maximumDigits] is 10 and maximumFractionDigits of [numberFormat] is 6.
-  CalcController({maximumDigits = 10})
+  /// Create a [CalcController] with [maximumDigits] is 15 and maximumFractionDigits of [numberFormat] is 6.
+  CalcController({maximumDigits = 15})
       : _calc = Calculator(maximumDigits: maximumDigits);
 
   /// Create a [Calculator].
@@ -67,8 +67,9 @@ class CalcController extends ChangeNotifier {
 
   /// Perform operations.
   void operate() {
-    _calc.operate();
+    _calc.operate(commit: true);
     _acLabel = 'AC';
+
     notifyListeners();
   }
 

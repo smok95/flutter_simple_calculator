@@ -151,7 +151,7 @@ class CalcExpression {
       _right = _rightInternal = null;
     }
     _op = op;
-    value = '$_left $_op ?';
+    value = '$_left $_op ';
   }
 
   /// Set percent value. The [string] is a string representation and [percent] is a value.
@@ -195,6 +195,7 @@ class CalcExpression {
 /// Calculator
 class Calculator {
   final CalcExpression _expression;
+  final CalcDisplay _input;
   final CalcDisplay _display;
   bool _operated = false;
 
@@ -204,8 +205,8 @@ class Calculator {
   /// Maximum number of digits on display.
   final int maximumDigits;
 
-  /// Create a [Calculator] with [maximumDigits] is 10 and maximumFractionDigits of [numberFormat] is 6.
-  Calculator({maximumDigits = 10})
+  /// Create a [Calculator] with [maximumDigits] is 15 and maximumFractionDigits of [numberFormat] is 6.
+  Calculator({maximumDigits = 15})
       : this.numberFormat(
             NumberFormat()..maximumFractionDigits = 6, maximumDigits);
 
@@ -213,76 +214,99 @@ class Calculator {
   Calculator.numberFormat(this.numberFormat, this.maximumDigits)
       : _expression =
             CalcExpression(zeroDigit: numberFormat.symbols.ZERO_DIGIT),
+        _input = CalcDisplay(numberFormat, maximumDigits),
         _display = CalcDisplay(numberFormat, maximumDigits);
 
   /// Display string
-  get displayString => _display.string;
+  get inputString => _input.string;
 
   /// Display value
-  get displayValue => _display.value;
+  get inputValue => _input.value;
 
   /// Expression
   get expression => _expression.value;
 
+  get displayString {
+    if (_expression.value.isEmpty || _expression.value == '0') {
+      return '';
+    } else {
+      return _display.value == 0 ? '' : '= ${_display.string}';
+    }
+  }
+
+  get displayValue => _display.value;
+
   /// Set the value.
   void setValue(double val) {
-    _display.setValue(val);
-    _expression.setVal(_display);
+    _input.setValue(val);
+    _expression.setVal(_input);
   }
 
   /// Add a digit to the display.
   void addDigit(int digit) {
-    if (!_display.validValue()) {
+    if (!_input.validValue()) {
       return;
     }
     if (_expression.needClearDisplay()) {
-      _display.clear();
+      _input.clear();
     }
     if (_operated) {
       allClear();
     }
-    _display.addDigit(digit);
-    _expression.setVal(_display);
+    _input.addDigit(digit);
+    _expression.setVal(_input);
+
+    _display.setValue(_expression.operate().toDouble());
   }
 
   /// Add a decimal point.
   void addPoint() {
-    if (!_display.validValue()) {
+    if (!_input.validValue()) {
       return;
     }
     if (_expression.needClearDisplay()) {
-      _display.clear();
+      _input.clear();
     }
     if (_operated) {
       allClear();
     }
-    _display.addPoint();
-    _expression.setVal(_display);
+    _input.addPoint();
+    _expression.setVal(_input);
   }
 
   /// Clear all entries.
   void allClear() {
     _expression.clear();
+    _input.clear();
     _display.clear();
-    _expression.setVal(_display);
+    _expression.setVal(_input);
     _operated = false;
   }
 
   /// Clear last entry.
   void clear() {
+    _input.clear();
     _display.clear();
-    _expression.setVal(_display);
+    _expression.setVal(_input);
   }
 
   /// Perform operations.
-  void operate() {
-    if (!_display.validValue()) {
+  void operate({bool commit = false}) {
+    if (!_input.validValue()) {
       return;
     }
     if (_operated) {
-      _expression.repeat(_display);
+      _expression.repeat(_input);
     } else {
-      _display.setValue(_expression.operate().toDouble());
+      _input.setValue(_expression.operate().toDouble());
+
+      if (commit) {
+        _expression.clear();
+        _expression.setVal(_input);
+        _display.clear();
+        _operated = false;
+        return;
+      }
     }
     _operated = true;
   }
@@ -290,8 +314,8 @@ class Calculator {
   /// Remove the last digit.
   void removeDigit() {
     if (_check()) return;
-    _display.removeDigit();
-    _expression.setVal(_display);
+    _input.removeDigit();
+    _expression.setVal(_input);
   }
 
   /// Set the operation. The [op] must be either +, -, ×, or ÷.
@@ -307,26 +331,26 @@ class Calculator {
   /// Set a percent sign.
   void setPercent() {
     if (_check()) return;
-    var string = _display.string + numberFormat.symbols.PERCENT;
-    var val = _expression.setPercent(string, _display.value);
-    _display.setValue(val);
+    var string = _input.string + numberFormat.symbols.PERCENT;
+    var val = _expression.setPercent(string, _input.value);
+    _input.setValue(val);
   }
 
   /// Toggle between a plus sign and a minus sign.
   void toggleSign() {
     if (_check()) return;
-    _display.toggleSign();
-    _expression.setVal(_display);
+    _input.toggleSign();
+    _expression.setVal(_input);
   }
 
   ///
   bool _check() {
-    if (!_display.validValue()) {
+    if (!_input.validValue()) {
       return true;
     }
     if (_operated) {
       _expression.clear();
-      _expression.setVal(_display);
+      _expression.setVal(_input);
       _operated = false;
     }
     return false;

@@ -1,3 +1,7 @@
+## 2.3.0
+- Changed 계산결과 실시간 표시
+- 사칙연산 문자 아이콘으로 변경
+
 ## [2.2.1]
 - Removed warnings about bindings.
 

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:line_icons/line_icon.dart';
+import 'package:line_icons/line_icons.dart';
 
 import 'calc_controller.dart';
 
@@ -128,7 +130,7 @@ class SimpleCalculator extends StatefulWidget {
     this.onChanged,
     this.onTappedDisplay,
     this.numberFormat,
-    this.maximumDigits = 10,
+    this.maximumDigits = 15,
     this.hideSurroundingBorder = false,
     this.autofocus = false,
     this.focusNode,
@@ -449,6 +451,7 @@ class SimpleCalculatorState extends State<SimpleCalculator> {
         Color color =
             widget.theme?.numColor ?? Theme.of(context).scaffoldBackgroundColor;
         TextStyle? style = widget.theme?.numStyle;
+        Widget? icon;
         if (title == '=' ||
             title == '+' ||
             title == '-' ||
@@ -458,6 +461,26 @@ class SimpleCalculatorState extends State<SimpleCalculator> {
           style = widget.theme?.operatorStyle ??
               _baseStyle.copyWith(
                   color: Theme.of(context).primaryTextTheme.headline6!.color);
+
+          IconData? icondata;
+          if (title == '=') {
+            icondata = LineIcons.equals;
+          } else if (title == '+') {
+            icondata = LineIcons.plus;
+          } else if (title == '-') {
+            icondata = LineIcons.minus;
+          } else if (title == '÷') {
+            icondata = LineIcons.divide;
+          } else if (title == '×') {
+            icondata = LineIcons.times;
+          }
+
+          if (icondata != null) {
+            icon = Icon(
+              icondata,
+              size: style.fontSize! * 1.2,
+            );
+          }
         }
         if (title == _controller.numberFormat.symbols.PERCENT ||
             title == '→' ||
@@ -466,8 +489,10 @@ class SimpleCalculatorState extends State<SimpleCalculator> {
           color = widget.theme?.commandColor ?? Theme.of(context).splashColor;
           style = widget.theme?.commandStyle;
         }
+
         return GridButtonItem(
           title: title,
+          child: icon,
           color: color,
           textStyle: style,
         );
@@ -550,6 +575,28 @@ class _CalcDisplayState extends State<_CalcDisplay> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          Visibility(
+            visible: !widget.hideExpression!,
+            child: Expanded(
+              flex: 2,
+              child: Container(
+                color: widget.theme?.expressionColor,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 18, right: 18),
+                    child: AutoSizeText(
+                      widget.controller.expression!,
+                      style: widget.theme?.displayStyle ??
+                          const TextStyle(fontSize: 50),
+                      maxLines: 1,
+                      textDirection: TextDirection.ltr,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
           Expanded(
             flex: 2,
             child: GestureDetector(
@@ -567,29 +614,6 @@ class _CalcDisplayState extends State<_CalcDisplay> {
                       widget.controller.display!,
                       style: widget.theme?.displayStyle ??
                           const TextStyle(fontSize: 50),
-                      maxLines: 1,
-                      textDirection: TextDirection.ltr,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Visibility(
-            visible: !widget.hideExpression!,
-            child: Expanded(
-              child: Container(
-                color: widget.theme?.expressionColor,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                    scrollDirection: Axis.horizontal,
-                    reverse: true,
-                    child: Text(
-                      widget.controller.expression!,
-                      style: widget.theme?.expressionStyle ??
-                          const TextStyle(color: Colors.grey),
                       maxLines: 1,
                       textDirection: TextDirection.ltr,
                     ),
