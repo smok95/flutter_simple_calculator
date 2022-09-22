@@ -256,6 +256,7 @@ class Calculator {
     _input.addDigit(digit);
     _expression.setVal(_input);
 
+    // 실시간 계산
     _display.setValue(_expression.operate().toDouble());
   }
 
@@ -305,6 +306,7 @@ class Calculator {
         _expression.setVal(_input);
         _display.clear();
         _operated = false;
+        _input.clear();
         return;
       }
     }
@@ -316,6 +318,9 @@ class Calculator {
     if (_check()) return;
     _input.removeDigit();
     _expression.setVal(_input);
+
+    // 실시간 계산
+    _display.setValue(_expression.operate().toDouble());
   }
 
   /// Set the operation. The [op] must be either +, -, ×, or ÷.
@@ -334,6 +339,9 @@ class Calculator {
     var string = _input.string + numberFormat.symbols.PERCENT;
     var val = _expression.setPercent(string, _input.value);
     _input.setValue(val);
+
+    // 실시간 계산
+    _display.setValue(_expression.operate().toDouble());
   }
 
   /// Toggle between a plus sign and a minus sign.

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'package:intl/intl.dart' as intl;
-import 'package:line_icons/line_icon.dart';
 import 'package:line_icons/line_icons.dart';
 
 import 'calc_controller.dart';
@@ -103,6 +102,9 @@ class SimpleCalculator extends StatefulWidget {
   /// Called when the button is tapped or the value is changed.
   final CalcChanged? onChanged;
 
+  /// Called when the '=' button is tapped.
+  final CalcChanged? onResult;
+
   /// Called when the display area is tapped.
   final Function(double?, TapDownDetails)? onTappedDisplay;
 
@@ -135,6 +137,7 @@ class SimpleCalculator extends StatefulWidget {
     this.autofocus = false,
     this.focusNode,
     this.controller,
+    this.onResult,
   }) : super(key: key);
 
   @override
@@ -412,7 +415,11 @@ class SimpleCalculatorState extends State<SimpleCalculator> {
             _controller.setDivisionOp();
             break;
           case '=':
+            if (widget.onResult != null) {
+              widget.onResult!(val, _controller.value, _controller.expression);
+            }
             _controller.operate();
+
             break;
           case 'AC':
             _controller.allClear();
@@ -578,7 +585,7 @@ class _CalcDisplayState extends State<_CalcDisplay> {
           Visibility(
             visible: !widget.hideExpression!,
             child: Expanded(
-              flex: 2,
+              flex: 4,
               child: Container(
                 color: widget.theme?.expressionColor,
                 child: Align(
@@ -588,7 +595,7 @@ class _CalcDisplayState extends State<_CalcDisplay> {
                     child: AutoSizeText(
                       widget.controller.expression!,
                       style: widget.theme?.displayStyle ??
-                          const TextStyle(fontSize: 50),
+                          const TextStyle(fontSize: 60),
                       maxLines: 1,
                       textDirection: TextDirection.ltr,
                     ),
@@ -598,7 +605,7 @@ class _CalcDisplayState extends State<_CalcDisplay> {
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTapDown: (details) => widget.onTappedDisplay == null
@@ -613,7 +620,7 @@ class _CalcDisplayState extends State<_CalcDisplay> {
                     child: AutoSizeText(
                       widget.controller.display!,
                       style: widget.theme?.displayStyle ??
-                          const TextStyle(fontSize: 50),
+                          const TextStyle(fontSize: 40),
                       maxLines: 1,
                       textDirection: TextDirection.ltr,
                     ),
