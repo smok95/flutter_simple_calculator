@@ -22,6 +22,9 @@ class CalcController extends ChangeNotifier {
   /// Display value
   double? get value => _calc.displayValue;
 
+  /// Input value (currently entered number)
+  double? get inputValue => _calc.inputValue;
+
   /// Expression
   String? get expression => _calc.expression;
 
@@ -67,7 +70,7 @@ class CalcController extends ChangeNotifier {
 
   /// Perform operations.
   void operate() {
-    _calc.operate(commit: true);
+    _calc.operate();
     _acLabel = 'AC';
 
     notifyListeners();

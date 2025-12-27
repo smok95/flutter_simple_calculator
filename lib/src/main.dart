@@ -386,63 +386,116 @@ class SimpleCalculatorState extends State<SimpleCalculator> {
   }
 
   Widget _getButtons() {
-    return GridButton(
-      textStyle:
-          _baseStyle.copyWith(color: Theme.of(context).textTheme.button?.color),
-      borderColor: widget.theme?.borderColor ?? Theme.of(context).dividerColor,
-      textDirection: TextDirection.ltr,
-      hideSurroundingBorder: widget.hideSurroundingBorder,
-      borderWidth: widget.theme?.borderWidth ?? 0,
-      onPressed: (dynamic val) {
-        _focusNode.requestFocus();
-        switch (val) {
-          case '→':
-            _controller.removeDigit();
-            break;
-          case '±':
-            _controller.toggleSign();
-            break;
-          case '+':
-            _controller.setAdditionOp();
-            break;
-          case '-':
-            _controller.setSubtractionOp();
-            break;
-          case '×':
-            _controller.setMultiplicationOp();
-            break;
-          case '÷':
-            _controller.setDivisionOp();
-            break;
-          case '=':
-            if (widget.onResult != null) {
-              widget.onResult!(val, _controller.value, _controller.expression);
-            }
-            _controller.operate();
+    final items = [
+      [_acLabel, '→', _controller.numberFormat.symbols.PERCENT, '÷'],
+      [_nums[7], _nums[8], _nums[9], '×'],
+      [_nums[4], _nums[5], _nums[6], '-'],
+      [_nums[1], _nums[2], _nums[3], '+'],
+      [_nums[0], _controller.numberFormat.symbols.DECIMAL_SEP, '±', '='],
+    ];
 
-            break;
-          case 'AC':
-            _controller.allClear();
-            break;
-          case 'C':
-            _controller.clear();
-            break;
-          default:
-            if (val == _controller.numberFormat.symbols.DECIMAL_SEP) {
-              _controller.addPoint();
+    void handle(String? val) {
+      _focusNode.requestFocus();
+      switch (val) {
+        case '→':
+          _controller.removeDigit();
+          break;
+        case '±':
+          _controller.toggleSign();
+          break;
+        case '+':
+          _controller.setAdditionOp();
+          break;
+        case '-':
+          _controller.setSubtractionOp();
+          break;
+        case '×':
+          _controller.setMultiplicationOp();
+          break;
+        case '÷':
+          _controller.setDivisionOp();
+          break;
+        case '=':
+          if (widget.onResult != null) {
+            widget.onResult!(val, _controller.value, _controller.expression);
+          }
+          _controller.operate();
+          break;
+        case 'AC':
+          _controller.allClear();
+          break;
+        case 'C':
+          _controller.clear();
+          break;
+        default:
+          if (val == _controller.numberFormat.symbols.DECIMAL_SEP) {
+            _controller.addPoint();
+          } else if (val == _controller.numberFormat.symbols.PERCENT) {
+            _controller.setPercent();
+          } else if (_nums.contains(val)) {
+            _controller.addDigit(_nums.indexOf(val));
+          }
+      }
+      if (widget.onChanged != null) {
+        final reportedValue = (_nums.contains(val) ||
+                val == _controller.numberFormat.symbols.DECIMAL_SEP)
+            ? _controller.inputValue
+            : _controller.value;
+        widget.onChanged!(val, reportedValue, _controller.expression);
+      }
+    }
+
+    return Table(
+      border: TableBorder.symmetric(
+        inside: BorderSide(
+          color: widget.theme?.borderColor ?? Theme.of(context).dividerColor,
+          width: widget.theme?.borderWidth ?? 0,
+        ),
+      ),
+      children: items.map((row) {
+        return TableRow(
+          children: row.map((title) {
+            Color color = widget.theme?.numColor ??
+                Theme.of(context).scaffoldBackgroundColor;
+            TextStyle? style = widget.theme?.numStyle ?? _baseStyle;
+            final t = title ?? '';
+            if (t == '=' || t == '+' || t == '-' || t == '×' || t == '÷') {
+              color =
+                  widget.theme?.operatorColor ?? Theme.of(context).primaryColor;
+              style = widget.theme?.operatorStyle ??
+                  _baseStyle.copyWith(
+                      color:
+                          Theme.of(context).primaryTextTheme.titleLarge!.color);
             }
-            if (val == _controller.numberFormat.symbols.PERCENT) {
-              _controller.setPercent();
+            if (t == _controller.numberFormat.symbols.PERCENT ||
+                t == '→' ||
+                t == 'C' ||
+                t == 'AC') {
+              color =
+                  widget.theme?.commandColor ?? Theme.of(context).splashColor;
+              style = widget.theme?.commandStyle ?? style;
             }
-            if (_nums.contains(val)) {
-              _controller.addDigit(_nums.indexOf(val));
-            }
-        }
-        if (widget.onChanged != null) {
-          widget.onChanged!(val, _controller.value, _controller.expression);
-        }
-      },
-      items: _getItems(),
+
+            return SizedBox(
+              height: 60,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: style.color,
+                  textStyle: style,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.fromHeight(60),
+                ),
+                onPressed: () => handle(t),
+                child: Text(t),
+              ),
+            );
+          }).toList(),
+        );
+      }).toList(),
     );
   }
 
@@ -467,7 +520,7 @@ class SimpleCalculatorState extends State<SimpleCalculator> {
           color = widget.theme?.operatorColor ?? Theme.of(context).primaryColor;
           style = widget.theme?.operatorStyle ??
               _baseStyle.copyWith(
-                  color: Theme.of(context).primaryTextTheme.headline6!.color);
+                  color: Theme.of(context).primaryTextTheme.titleLarge!.color);
 
           IconData? icondata;
           if (title == '=') {

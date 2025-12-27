@@ -151,7 +151,7 @@ class CalcExpression {
       _right = _rightInternal = null;
     }
     _op = op;
-    value = '$_left $_op ';
+    value = '$_left $_op ?';
   }
 
   /// Set percent value. The [string] is a string representation and [percent] is a value.
@@ -227,11 +227,10 @@ class Calculator {
   get expression => _expression.value;
 
   get displayString {
-    if (_expression.value.isEmpty || _expression.value == '0') {
-      return '';
-    } else {
-      return _display.value == 0 ? '' : '= ${_display.string}';
+    if (_operated) {
+      return _display.string;
     }
+    return _input.string;
   }
 
   get displayValue => _display.value;

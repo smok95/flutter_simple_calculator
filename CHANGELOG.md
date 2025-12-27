@@ -1,3 +1,8 @@
+## [2.4.0] - 2025-12-27
+- Updated for Flutter/Dart latest compatibility (Dart 3 / Flutter changes).
+- Restored original rectangular button appearance and improved example UI.
+- Replaced `GridButton` usage with a compatible internal layout and fixed widget tests.
+- Updated example and pubspec SDK constraints.
 
 ## [2.3.1]
 - Added `onResult`
